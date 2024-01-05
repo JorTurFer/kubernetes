@@ -69,6 +69,7 @@ spec:
             - valuesValue
           matchLabels:
             matchLabelsKey: matchLabelsValue
+      subdomain: subdomainValue
       target:
         averageUtilization: 4
         averageValue: "0"
@@ -153,6 +154,7 @@ status:
             - valuesValue
           matchLabels:
             matchLabelsKey: matchLabelsValue
+      subdomain: subdomainValue
     object:
       current:
         averageUtilization: 3
