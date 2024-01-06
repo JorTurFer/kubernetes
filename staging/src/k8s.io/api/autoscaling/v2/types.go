@@ -324,6 +324,9 @@ type ExternalMetricSource struct {
 
 	// target specifies the target value for the given metric
 	Target MetricTarget `json:"target" protobuf:"bytes,2,name=target"`
+
+	// subdomain specifies the target subdomain for external metrics api
+	Subdomain *string `json:"subdomain,omitempty" protobuf:"bytes,3,name=subdomain"`
 }
 
 // MetricIdentifier defines the name and optionally selector for a metric
@@ -552,6 +555,9 @@ type ExternalMetricStatus struct {
 
 	// current contains the current value for the given metric
 	Current MetricValueStatus `json:"current" protobuf:"bytes,2,name=current"`
+
+	// subdomain specifies the current subdomain for external metrics api
+	Subdomain *string `json:"subdomain,omitempty" protobuf:"bytes,3,name=subdomain"`
 }
 
 // MetricValueStatus holds the current value for a metric

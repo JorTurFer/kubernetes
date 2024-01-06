@@ -684,7 +684,7 @@ func (a *HorizontalController) computeStatusForContainerResourceMetric(ctx conte
 // computeStatusForExternalMetric computes the desired number of replicas for the specified metric of type ExternalMetricSourceType.
 func (a *HorizontalController) computeStatusForExternalMetric(specReplicas, statusReplicas int32, metricSpec autoscalingv2.MetricSpec, hpa *autoscalingv2.HorizontalPodAutoscaler, selector labels.Selector, status *autoscalingv2.MetricStatus) (replicaCountProposal int32, timestampProposal time.Time, metricNameProposal string, condition autoscalingv2.HorizontalPodAutoscalerCondition, err error) {
 	if metricSpec.External.Target.AverageValue != nil {
-		replicaCountProposal, usageProposal, timestampProposal, err := a.replicaCalc.GetExternalPerPodMetricReplicas(statusReplicas, metricSpec.External.Target.AverageValue.MilliValue(), metricSpec.External.Metric.Name, hpa.Namespace, metricSpec.External.Metric.Selector)
+		replicaCountProposal, usageProposal, timestampProposal, err := a.replicaCalc.GetExternalPerPodMetricReplicas(statusReplicas, metricSpec.External.Target.AverageValue.MilliValue(), metricSpec.External.Metric.Name, hpa.Namespace, metricSpec.External.Metric.Selector, metricSpec.External.Subdomain)
 		if err != nil {
 			condition = a.getUnableComputeReplicaCountCondition(hpa, "FailedGetExternalMetric", err)
 			return 0, time.Time{}, "", condition, fmt.Errorf("failed to get %s external metric: %v", metricSpec.External.Metric.Name, err)
@@ -699,12 +699,13 @@ func (a *HorizontalController) computeStatusForExternalMetric(specReplicas, stat
 				Current: autoscalingv2.MetricValueStatus{
 					AverageValue: resource.NewMilliQuantity(usageProposal, resource.DecimalSI),
 				},
+				Subdomain: metricSpec.External.Subdomain,
 			},
 		}
 		return replicaCountProposal, timestampProposal, fmt.Sprintf("external metric %s(%+v)", metricSpec.External.Metric.Name, metricSpec.External.Metric.Selector), autoscalingv2.HorizontalPodAutoscalerCondition{}, nil
 	}
 	if metricSpec.External.Target.Value != nil {
-		replicaCountProposal, usageProposal, timestampProposal, err := a.replicaCalc.GetExternalMetricReplicas(specReplicas, metricSpec.External.Target.Value.MilliValue(), metricSpec.External.Metric.Name, hpa.Namespace, metricSpec.External.Metric.Selector, selector)
+		replicaCountProposal, usageProposal, timestampProposal, err := a.replicaCalc.GetExternalMetricReplicas(specReplicas, metricSpec.External.Target.Value.MilliValue(), metricSpec.External.Metric.Name, hpa.Namespace, metricSpec.External.Metric.Selector, selector, metricSpec.External.Subdomain)
 		if err != nil {
 			condition = a.getUnableComputeReplicaCountCondition(hpa, "FailedGetExternalMetric", err)
 			return 0, time.Time{}, "", condition, fmt.Errorf("failed to get external metric %s: %v", metricSpec.External.Metric.Name, err)
@@ -719,6 +720,7 @@ func (a *HorizontalController) computeStatusForExternalMetric(specReplicas, stat
 				Current: autoscalingv2.MetricValueStatus{
 					Value: resource.NewMilliQuantity(usageProposal, resource.DecimalSI),
 				},
+				Subdomain: metricSpec.External.Subdomain,
 			},
 		}
 		return replicaCountProposal, timestampProposal, fmt.Sprintf("external metric %s(%+v)", metricSpec.External.Metric.Name, metricSpec.External.Metric.Selector), autoscalingv2.HorizontalPodAutoscalerCondition{}, nil

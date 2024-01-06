@@ -23,7 +23,14 @@ import (
 
 // ExternalMetricsClient is a client for fetching external metrics.
 type ExternalMetricsClient interface {
+	DomainedMetricsGetter
 	NamespacedMetricsGetter
+}
+
+// DomainedMetricsGetter provides access to an interface for fetching
+// metrics in a particular domain.
+type DomainedMetricsGetter interface {
+	DomainedMetrics(namespace string) NamespacedMetricsGetter
 }
 
 // NamespacedMetricsGetter provides access to an interface for fetching

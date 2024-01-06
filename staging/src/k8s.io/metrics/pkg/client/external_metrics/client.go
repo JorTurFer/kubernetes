@@ -69,6 +69,32 @@ func NewForConfigOrDie(c *rest.Config) ExternalMetricsClient {
 	return client
 }
 
+type domainedMetrics struct {
+	client *externalMetricsClient
+	domain string
+}
+
+func (c *externalMetricsClient) DomainedMetrics(domain string) NamespacedMetricsGetter {
+	return &domainedMetrics{
+		client: c,
+		domain: domain,
+	}
+}
+
+type namespacedMetrics struct {
+	client    *externalMetricsClient
+	namespace string
+	domain    string
+}
+
+func (c *domainedMetrics) NamespacedMetrics(namespace string) MetricsInterface {
+	return &namespacedMetrics{
+		client:    c.client,
+		namespace: namespace,
+		domain:    c.domain,
+	}
+}
+
 func (c *externalMetricsClient) NamespacedMetrics(namespace string) MetricsInterface {
 	return &namespacedMetrics{
 		client:    c,
@@ -76,14 +102,15 @@ func (c *externalMetricsClient) NamespacedMetrics(namespace string) MetricsInter
 	}
 }
 
-type namespacedMetrics struct {
-	client    *externalMetricsClient
-	namespace string
-}
-
 func (m *namespacedMetrics) List(metricName string, metricSelector labels.Selector) (*v1beta1.ExternalMetricValueList, error) {
 	res := &v1beta1.ExternalMetricValueList{}
+	domain := ""
+	if m.domain != "" {
+		domain = fmt.Sprintf("%s.", m.domain)
+	}
+	path := fmt.Sprintf("/apis/%s%s/%s", domain, v1beta1.SchemeGroupVersion.Group, v1beta1.SchemeGroupVersion.Version)
 	err := m.client.client.Get().
+		AbsPath(path).
 		Namespace(m.namespace).
 		Resource(metricName).
 		VersionedParams(&metav1.ListOptions{

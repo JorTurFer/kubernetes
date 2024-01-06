@@ -29,16 +29,37 @@ type FakeExternalMetricsClient struct {
 	testing.Fake
 }
 
+type fakeDomainedMetrics struct {
+	Fake   *FakeExternalMetricsClient
+	domain string
+}
+
+func (c *FakeExternalMetricsClient) DomainedMetrics(domain string) eclient.NamespacedMetricsGetter {
+	return &fakeDomainedMetrics{
+		Fake:   c,
+		domain: domain,
+	}
+}
+
+type fakeNamespacedMetrics struct {
+	Fake   *FakeExternalMetricsClient
+	ns     string
+	domain string
+}
+
+func (c *fakeDomainedMetrics) NamespacedMetrics(namespace string) eclient.MetricsInterface {
+	return &fakeNamespacedMetrics{
+		Fake:   c.Fake,
+		ns:     namespace,
+		domain: c.domain,
+	}
+}
+
 func (c *FakeExternalMetricsClient) NamespacedMetrics(namespace string) eclient.MetricsInterface {
 	return &fakeNamespacedMetrics{
 		Fake: c,
 		ns:   namespace,
 	}
-}
-
-type fakeNamespacedMetrics struct {
-	Fake *FakeExternalMetricsClient
-	ns   string
 }
 
 func (m *fakeNamespacedMetrics) List(metricName string, metricSelector labels.Selector) (*v1beta1.ExternalMetricValueList, error) {

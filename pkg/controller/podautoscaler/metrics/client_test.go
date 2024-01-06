@@ -69,6 +69,7 @@ type restClientTestCase struct {
 	metricName          string
 	metricSelector      *metav1.LabelSelector
 	metricLabelSelector labels.Selector
+	subdomain           string
 }
 
 func (tc *restClientTestCase) prepareTestClient(t *testing.T) (*metricsfake.Clientset, *cmfake.FakeCustomMetricsClient, *emfake.FakeExternalMetricsClient) {
@@ -247,7 +248,7 @@ func (tc *restClientTestCase) runTest(t *testing.T) {
 		if err != nil {
 			t.Errorf("invalid metric selector: %+v", tc.metricSelector)
 		}
-		val, timestamp, err := metricsClient.GetExternalMetric(tc.metricName, tc.namespace, tc.metricLabelSelector)
+		val, timestamp, err := metricsClient.GetExternalMetric(tc.metricName, tc.namespace, tc.metricLabelSelector, tc.subdomain)
 		info := make(PodMetricsInfo, len(val))
 		for i, metricVal := range val {
 			info[fmt.Sprintf("%v-val-%v", tc.metricName, i)] = PodMetric{Value: metricVal}

@@ -53,5 +53,5 @@ type MetricsClient interface {
 
 	// GetExternalMetric gets all the values of a given external metric
 	// that match the specified selector.
-	GetExternalMetric(metricName string, namespace string, selector labels.Selector) ([]int64, time.Time, error)
+	GetExternalMetric(metricName string, namespace string, selector labels.Selector, subdomain string) ([]int64, time.Time, error)
 }

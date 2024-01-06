@@ -77,6 +77,7 @@ type metricInfo struct {
 	singleObject *autoscalingv2.CrossVersionObjectReference
 	selector     *metav1.LabelSelector
 	metricType   metricType
+	subdomain    *string
 
 	targetUsage       int64
 	perPodTargetUsage int64
@@ -396,7 +397,7 @@ func (tc *replicaCalcTestCase) runTest(t *testing.T) {
 		if tc.metric.targetUsage <= 0 {
 			t.Fatalf("Metric specified as externalMetric but metric.targetUsage is %d which is <=0.", tc.metric.targetUsage)
 		}
-		outReplicas, outUsage, outTimestamp, err = replicaCalc.GetExternalMetricReplicas(tc.currentReplicas, tc.metric.targetUsage, tc.metric.name, testNamespace, tc.metric.selector, selector)
+		outReplicas, outUsage, outTimestamp, err = replicaCalc.GetExternalMetricReplicas(tc.currentReplicas, tc.metric.targetUsage, tc.metric.name, testNamespace, tc.metric.selector, selector, tc.metric.subdomain)
 	case externalPerPodMetric:
 		if tc.metric.selector == nil {
 			t.Fatal("Metric specified as externalPerPodMetric but metric.selector is nil.")
@@ -405,7 +406,7 @@ func (tc *replicaCalcTestCase) runTest(t *testing.T) {
 			t.Fatalf("Metric specified as externalPerPodMetric but metric.perPodTargetUsage is %d which is <=0.", tc.metric.perPodTargetUsage)
 		}
 
-		outReplicas, outUsage, outTimestamp, err = replicaCalc.GetExternalPerPodMetricReplicas(tc.currentReplicas, tc.metric.perPodTargetUsage, tc.metric.name, testNamespace, tc.metric.selector)
+		outReplicas, outUsage, outTimestamp, err = replicaCalc.GetExternalPerPodMetricReplicas(tc.currentReplicas, tc.metric.perPodTargetUsage, tc.metric.name, testNamespace, tc.metric.selector, tc.metric.subdomain)
 	case podMetric:
 		outReplicas, outUsage, outTimestamp, err = replicaCalc.GetMetricReplicas(tc.currentReplicas, tc.metric.targetUsage, tc.metric.name, testNamespace, selector, nil)
 	default:

@@ -329,12 +329,16 @@ func (c *ReplicaCalculator) getReadyPodsCount(namespace string, selector labels.
 // GetExternalMetricReplicas calculates the desired replica count based on a
 // target metric value (as a milli-value) for the external metric in the given
 // namespace, and the current replica count.
-func (c *ReplicaCalculator) GetExternalMetricReplicas(currentReplicas int32, targetUsage int64, metricName, namespace string, metricSelector *metav1.LabelSelector, podSelector labels.Selector) (replicaCount int32, usage int64, timestamp time.Time, err error) {
+func (c *ReplicaCalculator) GetExternalMetricReplicas(currentReplicas int32, targetUsage int64, metricName, namespace string, metricSelector *metav1.LabelSelector, podSelector labels.Selector, subdomain *string) (replicaCount int32, usage int64, timestamp time.Time, err error) {
 	metricLabelSelector, err := metav1.LabelSelectorAsSelector(metricSelector)
 	if err != nil {
 		return 0, 0, time.Time{}, err
 	}
-	metrics, _, err := c.metricsClient.GetExternalMetric(metricName, namespace, metricLabelSelector)
+	metricDomain := ""
+	if subdomain != nil {
+		metricDomain = *subdomain
+	}
+	metrics, _, err := c.metricsClient.GetExternalMetric(metricName, namespace, metricLabelSelector, metricDomain)
 	if err != nil {
 		return 0, 0, time.Time{}, fmt.Errorf("unable to get external metric %s/%s/%+v: %s", namespace, metricName, metricSelector, err)
 	}
@@ -351,12 +355,16 @@ func (c *ReplicaCalculator) GetExternalMetricReplicas(currentReplicas int32, tar
 // GetExternalPerPodMetricReplicas calculates the desired replica count based on a
 // target metric value per pod (as a milli-value) for the external metric in the
 // given namespace, and the current replica count.
-func (c *ReplicaCalculator) GetExternalPerPodMetricReplicas(statusReplicas int32, targetUsagePerPod int64, metricName, namespace string, metricSelector *metav1.LabelSelector) (replicaCount int32, usage int64, timestamp time.Time, err error) {
+func (c *ReplicaCalculator) GetExternalPerPodMetricReplicas(statusReplicas int32, targetUsagePerPod int64, metricName, namespace string, metricSelector *metav1.LabelSelector, subdomain *string) (replicaCount int32, usage int64, timestamp time.Time, err error) {
 	metricLabelSelector, err := metav1.LabelSelectorAsSelector(metricSelector)
 	if err != nil {
 		return 0, 0, time.Time{}, err
 	}
-	metrics, timestamp, err := c.metricsClient.GetExternalMetric(metricName, namespace, metricLabelSelector)
+	metricDomain := ""
+	if subdomain != nil {
+		metricDomain = *subdomain
+	}
+	metrics, timestamp, err := c.metricsClient.GetExternalMetric(metricName, namespace, metricLabelSelector, metricDomain)
 	if err != nil {
 		return 0, 0, time.Time{}, fmt.Errorf("unable to get external metric %s/%s/%+v: %s", namespace, metricName, metricSelector, err)
 	}
